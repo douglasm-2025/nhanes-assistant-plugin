@@ -48,7 +48,6 @@ Maintain this state throughout:
 - `figure_paths`: list of PNG paths from `render_manuscript_figure` calls
 - `table_rds_paths`: list of RDS paths from `render_manuscript_table` calls
 - `html_fragments`: list of HTML fragments in order
-- `usage_log`: a running list of `(agent, tokens, tool_calls)` entries. Every time a subagent (Harmonizer, Statistician, Manuscript Writer, each Peer Reviewer iteration, each Manuscript Writer revision) returns, record the usage figures it reports — append one row per invocation, labeling Peer Review and revision iterations by number (e.g. `Peer Reviewer (attempt 3)`).
 
 ### Phase 1 — Research Plan
 
@@ -112,17 +111,3 @@ Loop:
    - The `.docx` file path
    - The reproducibility bundle path
    - "The authors field in the .docx is blank — please fill it in before submission."
-
-### Phase 6 — Token Report (presented to the user, never written into the manuscript)
-
-After delivering the manuscript, present a token-usage summary built from `usage_log`. This is a separate message to the user — it is NOT part of the `.docx` and must never be passed to `write_docx_output`.
-
-Title this report exactly: **"Pipeline subagent token usage (subagents only — not the full session total)."** Do not call it the full-path or query-to-output total; it is not.
-
-1. Render `usage_log` as a table with one row per subagent invocation: **Agent | Tokens | Tool calls**, in pipeline order, with the peer-review/revision iterations listed individually so the cost of the review loop is visible.
-2. Add a **Subagent subtotal** row (not "Total") summing the per-agent tokens and tool calls.
-3. State plainly the scope and its boundary:
-   - The per-agent numbers are the usage each subagent reported back to the orchestrator (what the harness surfaces — typically a combined token count plus tool-call count, not always a clean input/output split).
-   - This subtotal covers the **subagent legs only** (Harmonizer → Statistician → Manuscript Writer ⇄ Peer Reviewer). It does **not** include the orchestrator's own main-loop tokens (triage, parsing agent outputs, MCP tool calls, docx assembly) or cached-context re-reads. A running agent cannot meter its own tokens, so the plugin cannot compute the complete query-to-output figure on its own.
-   - **For the true full-path total (orchestrator + all subagents, input/output split, dollar cost):** instruct the user to read `/cost` immediately before invoking `/nhanes-assistant` and again when it finishes — the delta is the authoritative complete cost, and this table shows where inside that total the subagent effort went.
-4. If any subagent did not report usage, show its row as `n/a` rather than guessing.
