@@ -34,6 +34,20 @@ Ask a question in plain language; the orchestrator classifies it and routes:
 
 ---
 
+## Example output
+
+These are produced by the plugin from a real Full-path run — *"Is family income associated with obesity in US adults?"* (NHANES 2015–2016 and 2017–2018, N = 9,339 adults). The full run also drafts the Abstract/Methods/Results/Limitations and assembles a formatted `.docx` with these figures and the Table 1 / model tables embedded.
+
+**Figure 2 — adjusted odds ratios (forest plot):**
+
+<img src="docs/examples/forest_plot.png" width="640" alt="Forest plot of adjusted odds ratios for obesity">
+
+**Figure 1 — participant flow:**
+
+<img src="docs/examples/participant_flow.png" width="420" alt="Participant flow diagram">
+
+---
+
 ## Requirements
 - **R** (with `Rscript` on PATH) — the engine. macOS/Linux/Windows.
 - **Python 3.11+** — runs the MCP server.
