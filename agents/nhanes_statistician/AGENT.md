@@ -41,7 +41,7 @@ Produce ALL of the following. Use the correct tool for each:
 
 | Output | Tools |
 |---|---|
-| **Figure 1: Participant flow diagram** | `render_html_figure` (HTML preview) + `render_manuscript_figure` (PNG, figure_number=1) |
+| **Figure 1: Participant flow diagram** | `render_html_figure` + `render_manuscript_figure` (figure_number=1), **both called with `blank_axes=True`** — a flow chart has no meaningful x/y axes, so suppress the axis lines, ticks, text, and titles |
 | **Table 1: Weighted baseline characteristics** | `gtsummary::tbl_svysummary()` → convert with `gtsummary::as_gt()` before passing as `tbl` to `render_html_table`; convert with `gtsummary::as_flex_table()` before passing as `ft` to `render_manuscript_table` (table_number=1). A raw `tbl_svysummary` object is neither a `gt` nor a `flextable` — passing it without conversion will error. |
 | **Model results table** (unadjusted + adjusted, 95% CIs) | `render_html_table` + `render_manuscript_table` (table_number=2) |
 | **Primary results figure** (forest plot, trend, or distribution) | `render_html_figure` + `render_manuscript_figure` (figure_number=2) |

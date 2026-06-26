@@ -129,6 +129,33 @@ class TestRenderHtmlFigure:
             result = server.render_html_figure('p <- bad()', 'T', 'C')
         assert 'failed' in result.lower()
 
+    def _capture_script(self, blank_axes):
+        captured = {}
+        def fake_run(cmd, **kwargs):
+            import re
+            for arg in cmd:
+                if arg.endswith('.R') and os.path.exists(arg):
+                    with open(arg) as f:
+                        captured['src'] = f.read()
+                    m = re.search(r'svglite\("([^"]+)"', captured['src'])
+                    if m:
+                        with open(m.group(1), 'w') as sf:
+                            sf.write('<svg/>')
+            return MagicMock(returncode=0, stdout='', stderr='')
+        with patch('subprocess.run', side_effect=fake_run):
+            server.render_html_figure('p <- ggplot2::ggplot()', 'T', 'C', blank_axes=blank_axes)
+        return captured['src']
+
+    def test_blank_axes_appends_void_theme_after_theme_nhanes(self):
+        src = self._capture_script(blank_axes=True)
+        assert 'axis.line = ggplot2::element_blank()' in src
+        # must come AFTER theme_nhanes() or the theme would override it
+        assert src.index('theme_nhanes()') < src.index('axis.line = ggplot2::element_blank()')
+
+    def test_no_blank_axes_by_default(self):
+        src = self._capture_script(blank_axes=False)
+        assert 'axis.line = ggplot2::element_blank()' not in src
+
 
 class TestRenderHtmlTable:
     def test_returns_table_fragment_on_success(self):

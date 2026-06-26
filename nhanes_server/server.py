@@ -49,6 +49,14 @@ def _load_strobe_nut() -> str:
 
 _STROBE_NUT_CONTENT = _load_strobe_nut()
 
+# Applied after theme_nhanes() when a figure is rendered with blank_axes=True
+# (diagram-style figures such as participant flow charts have no meaningful axes).
+_BLANK_AXES_R = (
+    "p <- p + ggplot2::theme(axis.line = ggplot2::element_blank(), "
+    "axis.text = ggplot2::element_blank(), axis.ticks = ggplot2::element_blank(), "
+    "axis.title = ggplot2::element_blank())"
+)
+
 _HTML_STYLE_CSS = """
 body { font-family: Arial, sans-serif; font-size: 11pt; max-width: 920px; margin: 0 auto; padding: 24px; color: #333; line-height: 1.5; }
 h2 { font-size: 13pt; font-weight: bold; margin-top: 28px; }
@@ -182,10 +190,12 @@ tryCatch({{
 # ─────────────────────────────────────────────────────────────
 
 @mcp.tool()
-def render_html_figure(r_code: str, title: str, caption: str) -> str:
+def render_html_figure(r_code: str, title: str, caption: str, blank_axes: bool = False) -> str:
     """
     Execute r_code producing ggplot2 object `p`. Applies theme_nhanes() automatically,
     renders to SVG at 7×5 in, wraps in <figure> HTML. Saves to outputs/html/. Returns HTML fragment.
+    Set blank_axes=True for diagram-style figures (e.g. participant flow charts) that should have
+    no axis lines, ticks, text, or titles — it is applied AFTER theme_nhanes() so it is not overridden.
     """
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     svg_path    = os.path.join(FIGURES_DIR, f"fig_{ts}.svg")
@@ -200,6 +210,7 @@ source("{styles_fwd}")
 {r_code}
 
 p <- p + theme_nhanes()
+{_BLANK_AXES_R if blank_axes else ""}
 svglite::svglite("{svg_fwd}", width = 7, height = 5)
 print(p)
 dev.off()
@@ -305,10 +316,13 @@ def write_html_output(html_content: str, filename: str) -> str:
 # ─────────────────────────────────────────────────────────────
 
 @mcp.tool()
-def render_manuscript_figure(r_code: str, title: str, caption: str, figure_number: int) -> str:
+def render_manuscript_figure(r_code: str, title: str, caption: str, figure_number: int,
+                             blank_axes: bool = False) -> str:
     """
     Execute r_code producing ggplot2 object `p`. Applies theme_nhanes(). Renders to PNG at 300 DPI
     via ragg::agg_png(). Saves to outputs/figures/figN_TIMESTAMP.png. Returns file path.
+    Set blank_axes=True for diagram-style figures (e.g. participant flow charts) that should have
+    no axis lines, ticks, text, or titles — it is applied AFTER theme_nhanes() so it is not overridden.
     """
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     png_path    = os.path.join(FIGURES_DIR, f"fig{figure_number}_{ts}.png")
@@ -323,6 +337,7 @@ source("{styles_fwd}")
 {r_code}
 
 p <- p + theme_nhanes()
+{_BLANK_AXES_R if blank_axes else ""}
 ragg::agg_png("{png_fwd}", width = 7, height = 5, units = "in", res = 300)
 print(p)
 dev.off()
