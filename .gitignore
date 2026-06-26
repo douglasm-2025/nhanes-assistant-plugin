@@ -1,0 +1,6 @@
+nhanes_server/venv/
+nhanes_server/analysis_scripts/
+nhanes_server/outputs/
+__pycache__/
+*.pyc
+nhanes_server/templates/manuscript_template.docx
