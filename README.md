@@ -55,13 +55,35 @@ These are produced by the plugin from a real Full-path run — *"Is family incom
 
 ## Install
 
+You can install through the **Claude Code plugin marketplace** (Option A) or by **cloning manually** (Option B).
+
+> **Either way, you must run `setup.sh` after installing.** It builds the Python venv and installs the R packages the MCP server depends on. The plugin's MCP server runs `nhanes_server/venv/bin/python`, which does **not exist** until setup runs — so until then the `/nhanes-assistant` skill loads but its tools will fail. This is not a one-click plugin: R must already be installed (see [Requirements](#requirements)).
+
+### Option A — Claude Code plugin marketplace
+
+```bash
+claude plugin marketplace add douglasm-2025/nhanes-assistant-plugin
+claude plugin install nhanes-assistant@nhanes-marketplace
+```
+
+The plugin is cloned into Claude Code's plugin cache. Build the environment **in that installed copy**, then reload:
+
+```bash
+cd ~/.claude/plugins/cache/nhanes-marketplace/nhanes-assistant/*/
+bash setup.sh
+```
+
+Restart Claude Code (or run `/reload-plugins`) so the MCP server connects. Do not move the installed folder afterward — the venv stores absolute paths.
+
+### Option B — Manual clone
+
 ```bash
 git clone https://github.com/douglasm-2025/nhanes-assistant-plugin.git
 cd nhanes-assistant-plugin
 bash setup.sh
 ```
 
-`setup.sh` creates a Python venv at `nhanes_server/venv/`, installs the Python and R packages, and generates the Word template. **Run it from the plugin's permanent location** — the venv stores absolute paths, so don't move the folder after setup.
+`setup.sh` creates a Python venv at `nhanes_server/venv/`, installs the Python and R packages, and generates the Word template. **Run it from the plugin's permanent location** — the venv stores absolute paths, so don't move the folder after setup. Then register the MCP server and skill as below.
 
 ### Claude Code
 1. Register the MCP server (use absolute paths):

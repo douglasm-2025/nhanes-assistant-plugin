@@ -1,0 +1,15 @@
+{
+  "name": "nhanes-marketplace",
+  "description": "Marketplace for the NHANES Assistant plugin — a complex-survey research engine for nutrition epidemiology.",
+  "owner": {
+    "name": "douglasm-2025",
+    "url": "https://github.com/douglasm-2025"
+  },
+  "plugins": [
+    {
+      "name": "nhanes-assistant",
+      "source": "./",
+      "description": "Expert NHANES research engine: statistical analysis and manuscript-ready output for peer-reviewed nutrition epidemiology. Requires R + Python; run setup.sh after install."
+    }
+  ]
+}
