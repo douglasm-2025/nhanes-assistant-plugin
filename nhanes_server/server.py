@@ -118,10 +118,23 @@ tryCatch({
 def execute_r_script(r_code: str) -> str:
     """Save r_code to a timestamped file in analysis_scripts/ and execute it via Rscript.
 
-    The canonical survey helpers (r_helpers/nhanes_survey.R: nh_design, nh_mean,
-    nh_diff) are auto-sourced before the script runs, so analyses can call them
-    without an explicit source() and produce correct, near-identical survey
-    boilerplate every run.
+    Build the survey design with the canonical helper nh_design() (auto-sourced from
+    r_helpers/nhanes_survey.R — no source() needed) for standard NHANES designs; do not
+    hand-roll svydesign() for those. (Escape hatch: if a task genuinely needs a design
+    nh_design() cannot express — replicate weights, a non-standard subsample, or older
+    cycles with different design variables — build it explicitly with svydesign() and
+    note why.) nh_design() bakes in the lonely-PSU, id=~SDMVPSU/strata=~SDMVSTRA/nest=TRUE,
+    combined-cycle-weight, and positive-weight rules, so the design is correct by construction:
+
+      des     <- nh_design(data, weight_var, n_cycles=, positive_weight=)
+      des_sub <- subset(des, ...)        # restrict analytic domains ON the design
+
+    Then estimate on that design:
+      - nh_mean(des_sub, var)            -> weighted mean
+      - nh_diff(des_sub, var, group)     -> weighted between-group difference
+      - any other estimand               -> the appropriate survey function applied to
+        des / des_sub, e.g. svyciprop (prevalence + logit CI), svyglm (regression),
+        svyby (by-group), svyquantile (quantiles), svycontrast (contrasts).
     """
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = os.path.join(ANALYSIS_SCRIPTS_DIR, f"analysis_{ts}.R")
@@ -632,20 +645,31 @@ CROSS-CYCLE HARMONIZATION — always check before pooling cycles:
    cotinine across the G/H boundary.
 4. BLOOD PRESSURE: BPX (cycles A-I) → BPXO (cycles J+). Use correct table per cycle.
 
-SURVEY DESIGN VARIABLES
-PSU: SDMVPSU | Strata: SDMVSTRA | Always nest=TRUE
-Set options(survey.lonely.psu="adjust") BEFORE any svydesign() call.
+SURVEY DESIGN — build it with the canonical helper for standard NHANES designs; do not
+hand-roll svydesign() for those:
+  des <- nh_design(data, weight_var, n_cycles = <k>)   # auto-loaded by execute_r_script
+Escape hatch: if a task genuinely needs a design nh_design() can't express (replicate
+weights, a non-standard subsample, older cycles with different design variables), build
+it explicitly with svydesign() and note why.
+nh_design() sets options(survey.lonely.psu="adjust"), uses id=~SDMVPSU, strata=~SDMVSTRA,
+nest=TRUE, divides the 2-year weight by n_cycles, and keeps positive analysis weights.
+Restrict analytic domains with subset(des, ...) — never row-drop before the design.
+Estimate ON the design: nh_mean(des_sub, var) / nh_diff(des_sub, var, group) for means and
+differences; for other estimands use the appropriate survey function on des/des_sub —
+svyciprop (prevalence + logit CI), svyglm (regression), svyby (by-group), svyquantile,
+svycontrast.
 
-WEIGHT SELECTION — use weight for the component with lowest probability of selection:
+WEIGHT SELECTION (pass as weight_var to nh_design) — use the component with the lowest
+probability of selection:
 Interview/questionnaire only         → WTINT2YR
 MEC exam / physical measures / labs  → WTMEC2YR
 Day 1 dietary recall                 → WTDRD1  (in DR1TOT and DR1IFF tables)
-Day 1 + Day 2 dietary recall         → WTDR2D  — MUST filter WTDR2D > 0 before svydesign()
+Day 1 + Day 2 dietary recall         → WTDR2D  (nh_design keeps WTDR2D > 0 via positive_weight)
 Fasting biochemistry subsample       → WTSAF2YR
 Environmental chemicals subsample    → WTSB2YR
 
-COMBINED-CYCLE WEIGHT RECALCULATION (required when pooling N two-year cycles):
-  df$WTDRD1_combined <- df$WTDRD1 / n_cycles   # before svydesign()
+COMBINED-CYCLE WEIGHT (pooling N two-year cycles): pass n_cycles = N to nh_design(), which
+divides the 2-year weight by N for you — do not hand-compute it before a raw svydesign().
 
 KEY DEMOGRAPHICS
 RIDAGEYR  — age in years (continuous)

@@ -27,12 +27,12 @@ If you discover during execution that the question actually requires regression,
 ## R Code Rules (when calling execute_r_script or render_html_figure)
 
 1. `set.seed(42)` — first line
-2. `options(survey.lonely.psu = "adjust")` before any `svydesign()`
-3. Combined-cycle weight: `WTXXX / n_cycles` before `svydesign()`
+2. **Build the survey design with the canonical helper** `nh_design(dat, <weight>, n_cycles = <k>)` for standard NHANES designs — don't hand-roll `svydesign()` for those. It applies `options(survey.lonely.psu="adjust")`, `id=~SDMVPSU, strata=~SDMVSTRA, nest=TRUE`, the combined-cycle weight division, and the positive-weight filter for you. (Escape hatch: if a design `nh_design()` can't express is genuinely needed — replicate weights, a non-standard subsample, older cycles with different design variables — build it explicitly with `svydesign()` and note why.)
+3. **Restrict analytic domains with `subset(des, ...)`** on the design, then estimate on it: `nh_mean(des_sub, <var>)` / `nh_diff(des_sub, <var>, <group>)` for means and differences; for other estimands use the appropriate survey function on `des`/`des_sub` (e.g. `svyciprop` for a prevalence with logit CI, `svyby` for by-group). Never row-drop before the design. Use the object names `dat`, `des`, `des_sub`, `res`.
 4. Never use `nhanesTranslate()` on any variable
 5. `print(sessionInfo())` — final lines of any execute_r_script call
 6. Consult `config://nhanes_expertise` for cycle suffixes, weight variables, and variable names before writing code
-7. **Use the canonical survey helpers** (auto-loaded `nhanes_survey.R`, readable at `config://nhanes_survey`): build the design with `nh_design(dat, <weight>, n_cycles = <k>)`, restrict domains with `subset(des, ...)`, and get weighted means via `nh_mean(des_sub, <var>)`. Use the object names `dat`, `des`, `des_sub`, `res`. (`nh_design()` applies the lonely-PSU and combined-weight rules for you — do not duplicate rules 2–3 when you use it.)
+7. The helpers are auto-loaded by `execute_r_script` (no `source()` needed); read their exact signatures at `config://nhanes_survey` if needed.
 
 ## Output Format
 
