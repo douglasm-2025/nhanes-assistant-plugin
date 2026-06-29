@@ -14,6 +14,7 @@ SCRIPT_DIR           = os.path.dirname(os.path.abspath(__file__))
 PLUGIN_ROOT          = os.path.dirname(SCRIPT_DIR)
 R_HELPERS_DIR        = os.path.join(SCRIPT_DIR, "r_helpers")
 NHANES_STYLES_PATH   = os.path.join(R_HELPERS_DIR, "nhanes_styles.R")
+NHANES_SURVEY_PATH   = os.path.join(R_HELPERS_DIR, "nhanes_survey.R")
 STROBE_NUT_PATH      = os.path.join(PLUGIN_ROOT, "STROBE-nut_checklist.docx")
 TEMPLATE_PATH        = os.path.join(SCRIPT_DIR, "templates", "manuscript_template.docx")
 ANALYSIS_SCRIPTS_DIR = os.path.join(SCRIPT_DIR, "analysis_scripts")
@@ -115,11 +116,23 @@ tryCatch({
 
 @mcp.tool()
 def execute_r_script(r_code: str) -> str:
-    """Save r_code to a timestamped file in analysis_scripts/ and execute it via Rscript."""
+    """Save r_code to a timestamped file in analysis_scripts/ and execute it via Rscript.
+
+    The canonical survey helpers (r_helpers/nhanes_survey.R: nh_design, nh_mean,
+    nh_diff) are auto-sourced before the script runs, so analyses can call them
+    without an explicit source() and produce correct, near-identical survey
+    boilerplate every run.
+    """
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = os.path.join(ANALYSIS_SCRIPTS_DIR, f"analysis_{ts}.R")
+    survey_fwd = NHANES_SURVEY_PATH.replace("\\", "/")
+    preamble = (
+        "# --- NHANES Assistant: canonical survey helpers (auto-loaded) ---\n"
+        f'if (file.exists("{survey_fwd}")) source("{survey_fwd}")\n'
+        "# --- end auto-load ---\n\n"
+    )
     with open(path, 'w') as f:
-        f.write(r_code)
+        f.write(preamble + r_code)
     try:
         result = subprocess.run(
             ["Rscript", "--vanilla", path],
@@ -705,6 +718,15 @@ def get_nhanes_styles() -> str:
         with open(NHANES_STYLES_PATH, 'r') as f:
             return f.read()
     return "nhanes_styles.R not found. Run setup.sh first."
+
+
+@mcp.resource("config://nhanes_survey")
+def get_nhanes_survey() -> str:
+    """Return the full R source of nhanes_survey.R (canonical survey helpers) for agents to reference."""
+    if os.path.exists(NHANES_SURVEY_PATH):
+        with open(NHANES_SURVEY_PATH, 'r') as f:
+            return f.read()
+    return "nhanes_survey.R not found. Run setup.sh first."
 
 
 if __name__ == "__main__":

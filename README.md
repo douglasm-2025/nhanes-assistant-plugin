@@ -128,16 +128,17 @@ plugin.json                       Antigravity manifest
 setup.sh                          venv + R packages + Word template
 STROBE-nut_checklist.docx         Source for the peer reviewer's checklist
 nhanes_server/
-  server.py                       FastMCP server (11 tools, 5 resources)
-  r_helpers/                      ggplot theme + gt/flextable styles; template generator
+  server.py                       FastMCP server (11 tools, 6 resources)
+  r_helpers/                      ggplot theme + gt/flextable styles; canonical survey helpers (nhanes_survey.R); template generator
 agents/                           5 agent definitions (harmonizer, statistician, writer, reviewer, quick analyst)
-skills/nhanes-assistant/SKILL.md  Orchestrator (triage + 15-loop peer review)
+skills/nhanes-assistant/SKILL.md  Orchestrator (triage + 15-loop peer review + token report)
 docs/mcp-setup.md                 Claude Code connection guide
 tests/                            Server unit tests + R style tests
 ```
 
 ## Notes & limits
 - The `.docx` author line is intentionally blank — fill it in before submission. Continuous line numbering is enabled in Word (officer cannot set it programmatically).
+- The orchestrator prints a **subagent token report** at the end. It covers the subagent legs only (not the orchestrator's own tokens); for the true full-session total, read `/cost` before and after the run.
 - NHANES is cross-sectional: outputs use associational, non-causal language by design.
 
 ## Data source & license

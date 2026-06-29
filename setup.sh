@@ -8,7 +8,7 @@ VENV_DIR="$SERVER_DIR/venv"
 TEMPLATES_DIR="$SERVER_DIR/templates"
 TEMPLATE_PATH="$TEMPLATES_DIR/manuscript_template.docx"
 
-echo "=== NHANES Plugin v2 Setup ==="
+echo "=== NHANES Plugin Setup ==="
 echo "Plugin dir: $SCRIPT_DIR"
 
 # ── Copy STROBE-nut checklist from project root if not present ──

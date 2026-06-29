@@ -1,7 +1,7 @@
 {
   "name": "nhanes-assistant",
   "description": "Expert NHANES research engine: statistical analysis and manuscript-ready output for peer-reviewed nutrition epidemiology.",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "mcpServers": {
     "nhanes-assistant": {
       "command": "nhanes_server/venv/bin/python",

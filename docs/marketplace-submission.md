@@ -32,7 +32,7 @@ tag the release and reference it, or swap the source to a pinned commit:
 }
 ```
 
-`claude plugin tag` creates a `nhanes-assistant--v2.0.0` git tag and checks that
+`claude plugin tag` creates a `nhanes-assistant--v1.0.0` git tag and checks that
 `plugin.json` and the marketplace entry agree — useful before announcing a version.
 
 ---
@@ -47,7 +47,7 @@ against quality and security standards:
 
 ### Info to have ready for the form
 - **Plugin name:** nhanes-assistant
-- **Version:** 2.0.0
+- **Version:** 1.0.0
 - **Repository:** https://github.com/douglasm-2025/nhanes-assistant-plugin
 - **Description:** Expert NHANES research engine: statistical analysis and
   manuscript-ready output for peer-reviewed nutrition epidemiology.

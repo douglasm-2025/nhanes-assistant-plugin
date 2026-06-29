@@ -32,6 +32,7 @@ If you discover during execution that the question actually requires regression,
 4. Never use `nhanesTranslate()` on any variable
 5. `print(sessionInfo())` — final lines of any execute_r_script call
 6. Consult `config://nhanes_expertise` for cycle suffixes, weight variables, and variable names before writing code
+7. **Use the canonical survey helpers** (auto-loaded `nhanes_survey.R`, readable at `config://nhanes_survey`): build the design with `nh_design(dat, <weight>, n_cycles = <k>)`, restrict domains with `subset(des, ...)`, and get weighted means via `nh_mean(des_sub, <var>)`. Use the object names `dat`, `des`, `des_sub`, `res`. (`nh_design()` applies the lonely-PSU and combined-weight rules for you — do not duplicate rules 2–3 when you use it.)
 
 ## Output Format
 
